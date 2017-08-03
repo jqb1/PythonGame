@@ -11,6 +11,7 @@ BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
+ORANGE_RED = (255, 69, 0)
 
 rows = height / 10  # using for making food only in y=10,20 ,...
 cols = width / 10
@@ -38,9 +39,6 @@ class Body:
         self.bod = pygame.Rect(self.bodyX, self.bodyY, 10, 10)
 
 
-width = 500
-height = 500
-
 move_x_change = 0
 move_y_change = 0
 head = pygame.Rect(100, 100, 10, 10)
@@ -55,9 +53,10 @@ tail_length = 0
 previousX = 0
 previousY = 0
 
+# initializing score
+score = 0
+
 body_list = []  # list of objects, type body -  using to draw body parts
-list_ofX = []
-list_ofy = []  # lists of coords x and y afterwards will compare them with x and y of existing snake parts
 
 # game over variable initialization
 game_over = False
@@ -97,7 +96,7 @@ while not exit_game:
         clock.tick(60)
 
         key = pygame.key.get_pressed()
-
+        # managing action for pressing the key
         if key[pygame.K_LEFT]:
             # if before pressed key was right dont turn back
             if direction == 4:
@@ -148,8 +147,9 @@ while not exit_game:
         if head.y <= 0:
             head.y = height
 
-        # 'head' contains x and y of head and size
+        # 'head' contains x and y of head and its size
         pygame.draw.rect(screen, RED, head)
+
         # first part of body
         b = Body(prevX, prevY)
         if tail_length >= 1:
@@ -167,6 +167,9 @@ while not exit_game:
             f = Fruit()
             pygame.draw.rect(screen, GREEN, f.fru)  # drawing actual fruit position
             tail_length += 1  # counting how much body elements to print
+            #appending score if game goes on
+            if not game_over:
+                score += 5
 
         if tail_length >= 2:
             body_list.append(Body(previousX, previousY))  # first time he will get prev and prevy
@@ -189,8 +192,12 @@ while not exit_game:
         if game_over:
             text = font.render("Game Over!", True, BLACK)
             text_position = text.get_rect(centerx=background.get_width() / 2)
-            text_position.top = 300
+            text_position.top = 200
             screen.blit(text, text_position)
+
+        score_show = font.render("Score:"+str(score), True, ORANGE_RED)
+        score_position = score_show.get_rect(centerx=background.get_width() / 2)
+        screen.blit(score_show, score_position)
 
         pygame.display.flip()
         prevX = head.x
