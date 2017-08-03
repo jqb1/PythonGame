@@ -9,6 +9,7 @@ screen = pygame.display.set_mode([width, height])
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
+RED = (255, 0, 0)
 
 rows = height / 10  # using for making food only in y=10,20 ,...
 cols = width / 10
@@ -44,7 +45,8 @@ height = 500
 move_x_change = 0
 move_y_change = 0
 head = pygame.Rect(100, 100, 10, 10)
-
+# initialize default direction
+direction = 0
 f = Fruit()
 
 prevX = 0
@@ -58,6 +60,17 @@ body_list = []  # list of objects, type body -  using to draw body parts
 list_ofX = []
 list_ofy = []  # lists of coords x and y afterwards will compare them with x and y of existing snake parts
 
+# game over variable initialization
+game_over = False
+
+# declaring main game font and its size
+font = pygame.font.Font(None, 36)
+
+# create background/surface where whole game is printed
+background = pygame.Surface(screen.get_size())
+
+# whole game basing on the endless while loop
+
 while True:
 
     for event in pygame.event.get():
@@ -66,27 +79,49 @@ while True:
 
     screen.fill(WHITE)
 
-    pygame.time.wait(60)
+    pygame.time.wait(70)
     key = pygame.key.get_pressed()
 
     if key[pygame.K_LEFT]:
-        move_x_change = 0  # we dont want snake to speed up
-        move_x_change -= 10
-        move_y_change = 0
+        # if before pressed key was right dont turn back
+        if direction == 4:
+            pass
+        # variable which will help recognize the actual direction of snake
+        else:
+            direction = 1
+            move_x_change = 0  # snake can't speed up
+            move_x_change -= 10
+            move_y_change = 0
     elif key[pygame.K_DOWN]:
-        move_y_change = 0  # we dont want snake to speed up
-        move_y_change += 10
-        move_x_change = 0
+        # if key up before key down ->if player wants to turn back
+        if direction == 3:
+            pass
+        else:
+            direction = 2
+            move_y_change = 0  # snake can't speed up
+            move_y_change += 10
+            move_x_change = 0
     elif key[pygame.K_UP]:
-        move_y_change = 0
-        move_y_change -= 10
-        move_x_change = 0
+        if direction == 2:
+            pass
+        else:
+            direction = 3
+            move_y_change = 0
+            move_y_change -= 10
+            move_x_change = 0
     elif key[pygame.K_RIGHT]:
-        move_x_change = 0
-        move_x_change += 10
-        move_y_change = 0
-    head.x += move_x_change  # thanks to it our snake is keeping going forward
+        if direction == 1:
+            pass
+        else:
+            direction = 4
+            move_x_change = 0
+            move_x_change += 10
+            move_y_change = 0
+
+    # keeping snake going forward
+    head.x += move_x_change
     head.y += move_y_change
+
     pygame.time.wait(5)
     if head.x >= width:
         head.x = 10
@@ -97,18 +132,20 @@ while True:
     if head.y <= 0:
         head.y = height
 
-        # here should be a loop drawing body of snake!!!!!!!!!!!!
-
-    pygame.draw.rect(screen, BLUE, head)  # 'head' contains x and y of head and size
+    # 'head' contains x and y of head and size
+    pygame.draw.rect(screen, RED, head)
+    # first part of body
+    b = Body(prevX, prevY)
     if tail_length >= 1:
-        b = Body(prevX, prevY)  # first part of body
+        # using previousX and Y to print other parts of snake body
         previousX = b.bodyX
         previousY = b.bodyY
         pygame.draw.rect(screen, BLUE, b.bod)
 
-    print(prevX, prevY)
+    # Here is first fruit which appears at the start of the game
     pygame.draw.rect(screen, GREEN, f.fru)
 
+    # if snake eats food
     if f.positionX == head.x and f.positionY == head.y:
         del f
         f = Fruit()
@@ -118,15 +155,26 @@ while True:
     if tail_length >= 2:
         body_list.append(Body(previousX, previousY))  # first time he will get prev and prevy
         if len(body_list) > tail_length:
-            del body_list[0]    # without this, snake would leave a path behind
-
-            # now we cant use prevY and prevX cause it only contains xy of head
+            del body_list[0]  # without this, snake would leave a path behind
 
     list_length = len(body_list)
 
+    # printing the rest of the body
     for i in range(0, list_length):
         pygame.draw.rect(screen, BLUE, body_list[i].bod)
+
+    # checking if head didnt crash into the body of snake
+    if head.x == b.bodyX and head.y == b.bodyY:
+        print(head.x, head.y, b.bodyX, b.bodyY)
+        game_over = True
+
+    if game_over:
+        text = font.render("Game Over!", True, WHITE)
+        text_position = text.get_rect(centerx=background.get_width() / 2)
+        text_position.top = 300
+        screen.blit(text, text_position)
 
     pygame.display.flip()
     prevX = head.x
     prevY = head.y
+
