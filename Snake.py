@@ -2,8 +2,8 @@ import pygame
 import sys
 import random
 
-width = 500
-height = 500
+width = 300
+height = 300
 screen = pygame.display.set_mode([width, height])
 
 WHITE = (255, 255, 255)
@@ -12,6 +12,7 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 ORANGE_RED = (255, 69, 0)
+SNAKE_GREEN = (127, 255, 0)
 
 rows = height / 10  # using for making food only in y=10,20 ,...
 cols = width / 10
@@ -39,6 +40,8 @@ class Body:
         self.bod = pygame.Rect(self.bodyX, self.bodyY, 10, 10)
 
 
+# -----------------------------------------------------------------------------------------------------------------------
+#  Parameters which will initialize the game#
 move_x_change = 0
 move_y_change = 0
 head = pygame.Rect(100, 100, 10, 10)
@@ -82,11 +85,11 @@ exit_game = False
 
 # whole game basing on the endless while loop
 while not exit_game:
-    if game_on:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit(0)
 
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            sys.exit(0)
+    if game_on:
         # setting background
         screen.fill(WHITE)
         # slowing down loop and so goes snake
@@ -156,7 +159,7 @@ while not exit_game:
             # using previousX and Y to print other parts of snake body
             previousX = b.bodyX
             previousY = b.bodyY
-            pygame.draw.rect(screen, BLUE, b.bod)
+            pygame.draw.rect(screen, SNAKE_GREEN, b.bod)
 
         # Here is first fruit which appears at the start of the game
         pygame.draw.rect(screen, GREEN, f.fru)
@@ -167,7 +170,7 @@ while not exit_game:
             f = Fruit()
             pygame.draw.rect(screen, GREEN, f.fru)  # drawing actual fruit position
             tail_length += 1  # counting how much body elements to print
-            #appending score if game goes on
+
             if not game_over:
                 score += 5
 
@@ -180,7 +183,7 @@ while not exit_game:
 
         # printing the rest of the body
         for i in range(0, body_list_length):
-            pygame.draw.rect(screen, BLUE, body_list[i].bod)
+            pygame.draw.rect(screen, SNAKE_GREEN, body_list[i].bod)
             if head.x == body_list[i].bodyX and head.y == body_list[i].bodyY:
                 game_over = True
 
@@ -189,16 +192,24 @@ while not exit_game:
             print(head.x, head.y, b.bodyX, b.bodyY)
             game_over = True
 
-        if game_over:
-            text = font.render("Game Over!", True, BLACK)
-            text_position = text.get_rect(centerx=background.get_width() / 2)
-            text_position.top = 200
-            screen.blit(text, text_position)
+    if game_over:
+        game_on = False
+        screen.fill(GREEN)
 
-        score_show = font.render("Score:"+str(score), True, ORANGE_RED)
-        score_position = score_show.get_rect(centerx=background.get_width() / 2)
+        text = font.render("Game Over!", True, BLACK)
+        text_position = text.get_rect(centerx=background.get_width() / 2)
+        text_position.top = 200
+        screen.blit(text, text_position)
+        score_show = font.render("Score:" + str(score), True, WHITE)
+        score_position = score_show.get_rect(centerx =background.get_width()/2)
+        score_position.top = background.get_height()/2
         screen.blit(score_show, score_position)
 
-        pygame.display.flip()
-        prevX = head.x
-        prevY = head.y
+    if not game_over:
+        score_show = font.render("Score:" + str(score), True, ORANGE_RED)
+        score_position = score_show.get_rect(topleft=(0, 0))
+        screen.blit(score_show, score_position)
+
+    pygame.display.flip()
+    prevX = head.x
+    prevY = head.y
